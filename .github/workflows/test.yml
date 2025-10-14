@@ -20,16 +20,16 @@ jobs:
     - name: 🧪 Run tests with Docker Compose
       run: |
         echo "🚀 Démarrage des tests automatisés..."
-        docker-compose --profile test up --build --abort-on-container-exit test
+        docker compose --profile test up --build --abort-on-container-exit test
         
     - name: 📊 Show test results
       if: always()
       run: |
         echo "📋 Résultats des tests:"
-        docker-compose --profile test logs test
+        docker compose --profile test logs test
         
     - name: 🧹 Cleanup
       if: always()
       run: |
-        docker-compose --profile test down -v
+        docker compose --profile test down -v
         docker system prune -f
