@@ -1,0 +1,73 @@
+name: 🔍 Tests de Connectivité - Simulation d'Erreurs
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch: # Permet de déclencher manuellement
+
+jobs:
+  connectivity-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+    
+    - name: 🐳 Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    
+    - name: 🚀 Start services (DB + Backend)
+      run: |
+        echo "Démarrage des services..."
+        docker compose up -d db backend
+        sleep 15
+        
+    - name: 🔍 Test 1: Backend accessible
+      run: |
+        echo "Test de connectivité au backend..."
+        docker compose run --rm test python -c "
+        import requests
+        try:
+            response = requests.get('http://backend:8000/health', timeout=5)
+            print('✅ Backend accessible - Status:', response.status_code)
+        except Exception as e:
+            print('❌ Backend inaccessible:', e)
+            exit(1)
+        "
+    
+    - name: ❌ Test 2: Simulation d'erreur (doit échouer)
+      run: |
+        echo "Simulation d'erreur de connectivité..."
+        docker compose run --rm test python -c "
+        import requests
+        print('🔍 Test de connectivité à un port inexistant...')
+        try:
+            response = requests.get('http://backend:9999/health', timeout=2)
+            print('❌ Connexion inattendue - ce test devrait échouer')
+            exit(1)
+        except Exception as e:
+            print('❌ Erreur de connectivité simulée détectée:', e)
+            print('✅ La détection automatique d erreur fonctionne!')
+            exit(1)  # Force l'échec pour démontrer la détection
+        "
+      continue-on-error: true
+    
+    - name: 🧪 Test 3: Tests pytest avec erreurs intentionnelles
+      run: |
+        echo "Lancement des tests de connectivité avec pytest..."
+        docker compose run --rm test pytest test_connectivity.py -v
+      continue-on-error: true
+    
+    - name: 📊 Show test results
+      if: always()
+      run: |
+        echo "📋 Résultats des tests de connectivité:"
+        docker compose logs backend | tail -20
+        
+    - name: 🧹 Cleanup
+      if: always()
+      run: |
+        docker compose down -v
+        docker system prune -f
