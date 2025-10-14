@@ -62,6 +62,30 @@ services:
     networks:
       - dockezr_network
 
+  # Service de test
+  test:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.test
+    container_name: dockezr_test
+    environment:
+      DATABASE_URL: postgresql://user:password@db:5432/dockezr
+      API_BASE_URL: http://backend:8000
+    depends_on:
+      db:
+        condition: service_healthy
+      backend:
+        condition: service_started
+    networks:
+      - dockezr_network
+    command: >
+      sh -c "echo '⏳ Attente du backend...' &&
+             sleep 15 &&
+             echo '🧪 Lancement des tests...' &&
+             pytest test_api.py -v --tb=short"
+    profiles:
+      - test
+
 networks:
   dockezr_network:
     driver: bridge
