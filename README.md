@@ -67,7 +67,7 @@ docker-compose up -d
 
 ou utilisez le script Windows :
 ```bash
-start.bat
+scripts/start.bat
 ```
 
 Cette commande va :
@@ -118,6 +118,11 @@ docker-compose up -d
 ### Arrêter les services
 ```bash
 docker-compose down
+```
+
+ou utilisez le script Windows :
+```bash
+scripts/stop.bat
 ```
 
 ### Voir les logs

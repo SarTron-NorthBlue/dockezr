@@ -74,10 +74,10 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 5. **Salle Digital** (20 personnes) - 20 postes informatiques, Vidéoprojecteur, WiFi
 
 ### Scripts d'administration
+- `scripts/start.bat` - Démarrage de l'application
+- `scripts/stop.bat` - Arrêt de l'application
 - `scripts/test.bat` - Exécution des tests automatisés
 - `scripts/test-connectivity.bat` - Tests de simulation d'erreur
-- `start.bat` - Démarrage de l'application
-- `stop.bat` - Arrêt de l'application
 
 ### Documentation
 - Guide d'utilisation complet
