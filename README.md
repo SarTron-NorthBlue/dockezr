@@ -1,22 +1,28 @@
-# 🏢 Expernet - Système de Réservation de Salles
+# Expernet - Système de Réservation de Salles
 
 Système complet de réservation de salles pour le centre de formation **Expernet**, développé avec **FastAPI** (Backend), **Next.js** (Frontend) et **PostgreSQL** (Base de données), orchestré avec Docker Compose.
 
-## 📋 Stack Technique
+[![Release](https://img.shields.io/badge/release-v1.0.0-blue.svg)](https://github.com/SarTron-NorthBlue/dockezr/releases/tag/v1.0.0)
+[![Tests](https://github.com/SarTron-NorthBlue/dockezr/workflows/Tests%20API%20-%20TP4/badge.svg)](https://github.com/SarTron-NorthBlue/dockezr/actions)
+[![Docker](https://img.shields.io/badge/docker-compose-blue.svg)](https://docs.docker.com/compose/)
+
+## Stack Technique
 
 - **Backend**: FastAPI (Python) avec AsyncPG
 - **Frontend**: Next.js 14 + TypeScript + Tailwind CSS
 - **Base de données**: PostgreSQL 16
 - **Containerisation**: Docker & Docker Compose
+- **Tests**: Pytest avec GitHub Actions CI/CD
+- **Versioning**: Git tags avec releases GitHub
 
-## ✨ Fonctionnalités
+## Fonctionnalités
 
-### 🏛️ Gestion des Salles
+### Gestion des Salles
 - 5 salles pré-configurées (Atlas, Horizon, Innovation, Connect, Digital)
 - Affichage des capacités et équipements
 - Interface intuitive de sélection
 
-### 📅 Réservations
+### Réservations
 - Formulaire de réservation complet
 - Champ email optionnel
 - Sélection de date et horaires
@@ -26,7 +32,7 @@ Système complet de réservation de salles pour le centre de formation **Experne
 - Validation des créneaux disponibles
 - Annulation de réservations
 
-### 📊 Planning Visuel
+### Planning Visuel
 - **Grille de planning par jour** (8h-22h)
 - Vue d'ensemble de toutes les salles
 - Code couleur : ✅ Disponible / ❌ Réservé
@@ -34,12 +40,12 @@ Système complet de réservation de salles pour le centre de formation **Experne
 - Navigation par date
 - Liste détaillée des réservations du jour
 
-### 📋 Suivi
+### Suivi
 - Vue d'ensemble de toutes les réservations
 - Filtrage par salle et par date
 - Historique complet
 
-## 🚀 Démarrage Rapide
+## Démarrage Rapide
 
 ### Prérequis
 
@@ -341,7 +347,24 @@ Ce système est idéal pour :
 - ✅ Universités et écoles
 - ✅ Bibliothèques avec salles d'étude
 
-## 📦 Production
+## Tests et Qualité
+
+### Tests automatisés
+- **Tests API** : Validation des endpoints avec Pytest
+- **Tests de connectivité** : Simulation d'erreurs pour validation
+- **CI/CD** : GitHub Actions avec tests automatiques
+- **Couverture** : Tests de performance et de régression
+
+### Exécution des tests
+```bash
+# Tests complets
+scripts/test.bat
+
+# Tests de simulation d'erreur
+scripts/test-connectivity.bat
+```
+
+## Production
 
 Pour un déploiement en production, modifiez :
 
@@ -352,7 +375,7 @@ Pour un déploiement en production, modifiez :
 5. Ajoutez un reverse proxy (Nginx, Traefik)
 6. Mettez en place des sauvegardes de la base de données
 
-## 🔐 Sécurité
+## Sécurité
 
 ⚠️ **Important pour la production** :
 - Changez les identifiants PostgreSQL par défaut
@@ -361,11 +384,18 @@ Pour un déploiement en production, modifiez :
 - Configurez CORS correctement
 - Utilisez HTTPS
 
-## 📄 Licence
+## Versions et Releases
+
+- **Version actuelle** : v1.0.0
+- **Changelog** : Voir [CHANGELOG.md](CHANGELOG.md)
+- **Releases** : [GitHub Releases](https://github.com/SarTron-NorthBlue/dockezr/releases)
+- **Tags Git** : Gestion des versions avec Git tags
+
+## Licence
 
 Ce projet est développé pour **Expernet** - Centre de Formation.
 
 ---
 
-**🏢 Système de réservation Expernet - Simplifions la gestion des salles ! 🚀**
+**Système de réservation Expernet - Simplifions la gestion des salles !**
 
