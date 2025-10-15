@@ -1,0 +1,77 @@
+name: 🚀 Release - TP5
+
+on:
+  push:
+    tags: [ 'v*' ]
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: 🐳 Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    
+    - name: 🧪 Run tests before release
+      run: |
+        echo "Validation des tests avant release..."
+        docker compose up -d db backend
+        sleep 15
+        docker compose --profile test up --build --abort-on-container-exit test
+        
+    - name: 📊 Show test results
+      if: always()
+      run: |
+        echo "Résultats des tests:"
+        docker compose --profile test logs test
+        
+    - name: 🧹 Cleanup
+      if: always()
+      run: |
+        docker compose --profile test down -v
+        docker system prune -f
+    
+    - name: 📝 Create Release Notes
+      id: release_notes
+      run: |
+        echo "notes<<EOF" >> $GITHUB_OUTPUT
+        echo "## 🎉 Release ${{ github.ref_name }}" >> $GITHUB_OUTPUT
+        echo "" >> $GITHUB_OUTPUT
+        echo "### Fonctionnalités principales" >> $GITHUB_OUTPUT
+        echo "- Système complet de réservation de salles" >> $GITHUB_OUTPUT
+        echo "- Interface de planning visuel avec grille horaire" >> $GITHUB_OUTPUT
+        echo "- Tests automatisés avec Pytest et GitHub Actions" >> $GITHUB_OUTPUT
+        echo "- Configuration Docker Compose multi-services" >> $GITHUB_OUTPUT
+        echo "- 5 salles pré-configurées" >> $GITHUB_OUTPUT
+        echo "- Documentation complète" >> $GITHUB_OUTPUT
+        echo "" >> $GITHUB_OUTPUT
+        echo "### Installation" >> $GITHUB_OUTPUT
+        echo "\`\`\`bash" >> $GITHUB_OUTPUT
+        echo "git clone https://github.com/SarTron-NorthBlue/dockezr.git" >> $GITHUB_OUTPUT
+        echo "cd dockezr" >> $GITHUB_OUTPUT
+        echo "docker-compose up -d" >> $GITHUB_OUTPUT
+        echo "\`\`\`" >> $GITHUB_OUTPUT
+        echo "" >> $GITHUB_OUTPUT
+        echo "### Accès" >> $GITHUB_OUTPUT
+        echo "- Frontend: http://localhost:3000" >> $GITHUB_OUTPUT
+        echo "- Backend API: http://localhost:8000" >> $GITHUB_OUTPUT
+        echo "- Documentation API: http://localhost:8000/docs" >> $GITHUB_OUTPUT
+        echo "" >> $GITHUB_OUTPUT
+        echo "Voir [CHANGELOG.md](CHANGELOG.md) pour plus de détails." >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+    
+    - name: 🏷️ Create GitHub Release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref_name }}
+        release_name: Release ${{ github.ref_name }}
+        body: ${{ steps.release_notes.outputs.notes }}
+        draft: false
+        prerelease: false

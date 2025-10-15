@@ -3,6 +3,7 @@ name: 🧪 Tests API - TP4
 on:
   push:
     branches: [ main, develop ]
+    tags: [ 'v*' ]
   pull_request:
     branches: [ main ]
 
