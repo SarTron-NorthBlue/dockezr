@@ -1,0 +1,98 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "Dockezr - Vue d'ensemble",
+    "tags": ["dockezr", "monitoring"],
+    "style": "dark",
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "État des services",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "up{job=\"dockezr-backend\"}",
+            "legendFormat": "Backend FastAPI"
+          },
+          {
+            "expr": "up{job=\"dockezr-frontend\"}",
+            "legendFormat": "Frontend Next.js"
+          },
+          {
+            "expr": "up{job=\"dockezr-database\"}",
+            "legendFormat": "Base de données"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "thresholds": {
+              "steps": [
+                {
+                  "color": "red",
+                  "value": 0
+                },
+                {
+                  "color": "green",
+                  "value": 1
+                }
+              ]
+            }
+          }
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 0
+        }
+      },
+      {
+        "id": 2,
+        "title": "Requêtes par seconde - Backend",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(http_requests_total{job=\"dockezr-backend\"}[5m])",
+            "legendFormat": "RPS"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 0
+        }
+      },
+      {
+        "id": 3,
+        "title": "Temps de réponse - Backend",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job=\"dockezr-backend\"}[5m]))",
+            "legendFormat": "95th percentile"
+          },
+          {
+            "expr": "histogram_quantile(0.50, rate(http_request_duration_seconds_bucket{job=\"dockezr-backend\"}[5m]))",
+            "legendFormat": "50th percentile"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 24,
+          "x": 0,
+          "y": 8
+        }
+      }
+    ],
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "refresh": "30s"
+  }
+}

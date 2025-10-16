@@ -1,16 +1,24 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional
 import asyncpg
 from datetime import datetime, date, time
 import os
+import time as time_module
+from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
 
 # Configuration de la base de données
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:password@db:5432/dockezr")
 
 # Pool de connexions
 pool = None
+
+# Métriques Prometheus
+REQUEST_COUNT = Counter('http_requests_total', 'Total HTTP requests', ['method', 'endpoint', 'status'])
+REQUEST_DURATION = Histogram('http_request_duration_seconds', 'HTTP request duration', ['method', 'endpoint'])
+RESERVATION_COUNT = Counter('reservations_total', 'Total reservations created', ['room_name'])
+ROOM_ACCESS_COUNT = Counter('room_access_total', 'Total room accesses', ['room_name'])
 
 # Modèles Pydantic pour les Salles
 class RoomCreate(BaseModel):
@@ -63,6 +71,27 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Middleware pour les métriques Prometheus
+@app.middleware("http")
+async def prometheus_middleware(request: Request, call_next):
+    start_time = time_module.time()
+    
+    # Extraire les informations de la requête
+    method = request.method
+    endpoint = request.url.path
+    
+    # Traiter la requête
+    response = await call_next(request)
+    
+    # Calculer la durée
+    duration = time_module.time() - start_time
+    
+    # Enregistrer les métriques
+    REQUEST_COUNT.labels(method=method, endpoint=endpoint, status=response.status_code).inc()
+    REQUEST_DURATION.labels(method=method, endpoint=endpoint).observe(duration)
+    
+    return response
 
 @app.on_event("startup")
 async def startup():
@@ -120,6 +149,11 @@ async def root():
 async def health_check():
     return {"status": "healthy", "database": "connected"}
 
+@app.get("/metrics")
+async def metrics():
+    """Endpoint pour les métriques Prometheus"""
+    return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
+
 # === ROUTES POUR LES SALLES ===
 
 @app.get("/rooms", response_model=List[Room])
@@ -136,6 +170,10 @@ async def get_room(room_id: int):
         row = await conn.fetchrow('SELECT * FROM rooms WHERE id = $1', room_id)
         if row is None:
             raise HTTPException(status_code=404, detail="Salle non trouvée")
+        
+        # Enregistrer l'accès à la salle
+        ROOM_ACCESS_COUNT.labels(room_name=row['name']).inc()
+        
         return dict(row)
 
 @app.post("/rooms", response_model=Room)
@@ -243,6 +281,10 @@ async def create_reservation(reservation: ReservationCreate):
         
         result = dict(row)
         result['room_name'] = room['name']
+        
+        # Enregistrer la création de réservation
+        RESERVATION_COUNT.labels(room_name=room['name']).inc()
+        
         return result
 
 @app.delete("/reservations/{reservation_id}")

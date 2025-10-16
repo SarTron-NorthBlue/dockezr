@@ -82,6 +82,8 @@ Cette commande va :
 - **Backend API**: http://localhost:8000
 - **Documentation API (Swagger)**: http://localhost:8000/docs
 - **Documentation API (ReDoc)**: http://localhost:8000/redoc
+- **Prometheus (Monitoring)**: http://localhost:9090
+- **Grafana (Tableaux de bord)**: http://localhost:3001 (admin/admin123)
 
 ## 📁 Structure du Projet
 
@@ -101,6 +103,12 @@ dockezr/
 │   ├── tsconfig.json        # Configuration TypeScript
 │   ├── tailwind.config.ts   # Configuration Tailwind
 │   └── Dockerfile           # Configuration Docker
+│
+├── monitoring/              # Configuration monitoring
+│   ├── prometheus.yml       # Configuration Prometheus
+│   └── grafana/             # Configuration Grafana
+│       ├── provisioning/    # Datasources et dashboards
+│       └── dashboards/      # Tableaux de bord
 │
 ├── docker-compose.yml       # Orchestration des services
 ├── .dockerignore           # Fichiers ignorés par Docker
@@ -134,6 +142,8 @@ docker-compose logs -f
 docker-compose logs -f backend
 docker-compose logs -f frontend
 docker-compose logs -f db
+docker-compose logs -f prometheus
+docker-compose logs -f grafana
 ```
 
 ### Reconstruire les images
@@ -369,16 +379,92 @@ scripts/test.bat
 scripts/test-connectivity.bat
 ```
 
-## Production
+## 🚀 Déploiement en Production
 
-Pour un déploiement en production, modifiez :
+### Déploiement sur Serveur Linux
 
-1. Les mots de passe et secrets dans `docker-compose.yml`
-2. Désactivez le mode debug/reload
-3. Utilisez des variables d'environnement sécurisées
-4. Configurez HTTPS/SSL
-5. Ajoutez un reverse proxy (Nginx, Traefik)
-6. Mettez en place des sauvegardes de la base de données
+Le projet est configuré pour un déploiement manuel sur serveur Linux avec Docker Compose.
+
+#### 1. **Préparation du serveur**
+
+```bash
+# Sur votre serveur Linux
+sudo apt update
+sudo apt install docker.io docker-compose git curl -y
+sudo systemctl start docker
+sudo systemctl enable docker
+```
+
+#### 2. **Cloner et configurer le projet**
+
+```bash
+# Cloner le repository
+git clone https://github.com/votre-username/dockezr.git
+cd dockezr
+
+# Copier la configuration de production
+cp env.prod.example .env.prod
+
+# Modifier les variables d'environnement
+nano .env.prod
+```
+
+#### 3. **Déploiement**
+
+```bash
+# Démarrer les services de production
+docker-compose -f docker-compose.prod.yml up -d
+
+# Vérifier l'état des services
+docker-compose -f docker-compose.prod.yml ps
+
+# Voir les logs
+docker-compose -f docker-compose.prod.yml logs -f
+```
+
+### Configuration de Production
+
+#### Variables d'environnement requises dans `.env.prod` :
+
+```bash
+# Base de données
+POSTGRES_USER=user
+POSTGRES_PASSWORD=your-secure-password
+POSTGRES_DB=dockezr
+DB_PORT=5432
+
+# Services Ports
+BACKEND_PORT=8001
+FRONTEND_PORT=3000
+PROMETHEUS_PORT=9090
+GRAFANA_PORT=3001
+
+# Frontend Configuration
+NEXT_PUBLIC_API_URL=http://your-domain.com:8001
+
+# Grafana Configuration
+GRAFANA_USER=admin
+GRAFANA_PASSWORD=your-secure-grafana-password
+
+# Production Settings
+NODE_ENV=production
+```
+
+#### Services de production :
+
+- **Frontend** : http://your-domain.com:3000
+- **Backend API** : http://your-domain.com:8001
+- **Prometheus** : http://your-domain.com:9090
+- **Grafana** : http://your-domain.com:3001
+
+### Sécurité en Production
+
+1. **Changez tous les mots de passe par défaut**
+2. **Configurez HTTPS/SSL** avec un reverse proxy
+3. **Utilisez des secrets Docker** pour les mots de passe
+4. **Activez l'authentification** utilisateur
+5. **Configurez les sauvegardes** de la base de données
+6. **Limitez l'accès** aux ports de monitoring
 
 ## Sécurité
 

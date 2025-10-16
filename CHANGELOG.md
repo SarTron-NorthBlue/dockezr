@@ -5,6 +5,61 @@ Toutes les modifications notables de ce projet seront documentées dans ce fichi
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.1.0] - 2025-10-16
+
+### Ajouté
+- **Monitoring et Observabilité** : Intégration complète Prometheus + Grafana
+  - Métriques automatiques pour le backend FastAPI
+  - Tableaux de bord Grafana pour la surveillance
+  - Endpoint `/metrics` pour la collecte de métriques
+  - Surveillance des performances (CPU, mémoire, requêtes)
+  - Métriques personnalisées (réservations, accès aux salles)
+
+- **Déploiement en Production** : Configuration pour serveur Linux
+  - Configuration de production avec docker-compose.prod.yml
+  - Variables d'environnement pour la production
+  - Guide de déploiement manuel sur serveur Linux
+  - Support Docker Compose pour déploiement simplifié
+
+- **Infrastructure de Production** :
+  - Images Docker optimisées pour la production
+  - Configuration de santé (healthchecks) pour tous les services
+  - Réseaux Docker dédiés pour la production
+  - Volumes persistants pour les données
+  - Configuration sécurisée des mots de passe
+
+### Modifié
+- **Backend FastAPI** : Ajout des métriques Prometheus
+  - Middleware de capture automatique des requêtes HTTP
+  - Compteurs pour les réservations et accès aux salles
+  - Histogrammes pour les temps de réponse
+  - Endpoint `/metrics` pour l'exposition des métriques
+
+- **Docker Compose** : Ajout des services de monitoring
+  - Service Prometheus (port 9090)
+  - Service Grafana (port 3001)
+  - Configuration des volumes et réseaux
+
+### Technique
+- **Métriques exposées** :
+  - `http_requests_total` : Nombre total de requêtes HTTP
+  - `http_request_duration_seconds` : Durée des requêtes
+  - `reservations_total` : Nombre de réservations créées
+  - `room_access_total` : Nombre d'accès aux salles
+  - `process_cpu_seconds_total` : Utilisation CPU
+  - `process_resident_memory_bytes` : Utilisation mémoire
+
+- **Services de monitoring** :
+  - Prometheus : Collecte et stockage des métriques
+  - Grafana : Visualisation et tableaux de bord
+  - Dashboard "Dockezr - Vue d'ensemble" pré-configuré
+
+- **Déploiement simplifié** :
+  - Configuration Docker Compose pour production
+  - Guide de déploiement manuel détaillé
+  - Support serveur Linux avec Docker
+  - Variables d'environnement sécurisées
+
 ## [1.0.0] - 2025-10-15
 
 ### Ajouté
