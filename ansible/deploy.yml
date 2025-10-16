@@ -1,0 +1,234 @@
+---
+# Playbook Ansible pour déployer DockeZR
+# Ce playbook installe Docker, clone le repository et lance l'application
+
+- name: "Déploiement automatisé de DockeZR sur serveur Linux"
+  hosts: all
+  become: yes
+  gather_facts: yes
+
+  tasks:
+    # ====================================================================
+    # ÉTAPE 1 : Mise à jour du système et installation des prérequis
+    # ====================================================================
+    - name: "[1/10] 🔄 Mise à jour du cache APT"
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+      when: ansible_os_family == "Debian"
+
+    - name: "[1/10] 📦 Installation des paquets système requis"
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg
+          - lsb-release
+          - git
+          - python3
+          - python3-pip
+        state: present
+      when: ansible_os_family == "Debian"
+
+    # ====================================================================
+    # ÉTAPE 2 : Installation de Docker
+    # ====================================================================
+    - name: "[2/10] 🐳 Vérification si Docker est déjà installé"
+      command: docker --version
+      register: docker_installed
+      ignore_errors: yes
+      changed_when: false
+
+    - name: "[2/10] 📁 Création du répertoire pour les clés GPG"
+      file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: '0755'
+      when: docker_installed.rc != 0
+
+    - name: "[2/10] 🔑 Ajout de la clé GPG officielle de Docker"
+      shell: |
+        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+        chmod a+r /etc/apt/keyrings/docker.gpg
+      args:
+        creates: /etc/apt/keyrings/docker.gpg
+      when: docker_installed.rc != 0 and ansible_distribution == "Ubuntu"
+
+    - name: "[2/10] 📝 Ajout du repository Docker"
+      apt_repository:
+        repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+        state: present
+        filename: docker
+      when: docker_installed.rc != 0 and ansible_distribution == "Ubuntu"
+
+    - name: "[2/10] 🐳 Installation de Docker Engine"
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+        state: present
+        update_cache: yes
+      when: docker_installed.rc != 0
+
+    - name: "[2/10] ✅ Vérification que Docker est démarré et activé au boot"
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: "[2/10] 👤 Ajout de l'utilisateur au groupe docker"
+      user:
+        name: "{{ deploy_user }}"
+        groups: docker
+        append: yes
+
+    # ====================================================================
+    # ÉTAPE 3 : Installation de Docker Compose (si nécessaire)
+    # ====================================================================
+    - name: "[3/10] 🔍 Vérification de Docker Compose"
+      command: docker compose version
+      register: compose_check
+      ignore_errors: yes
+      changed_when: false
+
+    - name: "[3/10] ✅ Docker Compose est installé"
+      debug:
+        msg: "Docker Compose est déjà disponible via le plugin Docker"
+      when: compose_check.rc == 0
+
+    # ====================================================================
+    # ÉTAPE 4 : Préparation des répertoires
+    # ====================================================================
+    - name: "[4/10] 📁 Création du répertoire de déploiement"
+      file:
+        path: "{{ deploy_dir }}"
+        state: directory
+        owner: "{{ deploy_user }}"
+        group: "{{ deploy_user }}"
+        mode: '0755'
+
+    # ====================================================================
+    # ÉTAPE 5 : Clonage du repository Git
+    # ====================================================================
+    - name: "[5/10] 🔍 Vérification si le repository existe déjà"
+      stat:
+        path: "{{ deploy_dir }}/.git"
+      register: git_repo
+
+    - name: "[5/10] 📥 Clonage du repository GitHub"
+      git:
+        repo: "{{ project_repo }}"
+        dest: "{{ deploy_dir }}"
+        version: "{{ project_branch }}"
+        force: yes
+      become_user: "{{ deploy_user }}"
+      when: not git_repo.stat.exists
+
+    - name: "[5/10] 🔄 Mise à jour du repository existant"
+      git:
+        repo: "{{ project_repo }}"
+        dest: "{{ deploy_dir }}"
+        version: "{{ project_branch }}"
+        force: yes
+      become_user: "{{ deploy_user }}"
+      when: git_repo.stat.exists
+
+    # ====================================================================
+    # ÉTAPE 6 : Configuration des variables d'environnement
+    # ====================================================================
+    - name: "[6/10] ⚙️ Création du fichier .env.prod depuis le template"
+      template:
+        src: templates/env.prod.j2
+        dest: "{{ deploy_dir }}/.env.prod"
+        owner: "{{ deploy_user }}"
+        group: "{{ deploy_user }}"
+        mode: '0600'
+
+    # ====================================================================
+    # ÉTAPE 7 : Arrêt des conteneurs existants (si présents)
+    # ====================================================================
+    - name: "[7/10] 🛑 Arrêt des conteneurs existants (si présents)"
+      command: docker compose -f docker-compose.prod.yml down
+      args:
+        chdir: "{{ deploy_dir }}"
+      become_user: "{{ deploy_user }}"
+      ignore_errors: yes
+      tags: stop
+
+    # ====================================================================
+    # ÉTAPE 8 : Construction des images Docker
+    # ====================================================================
+    - name: "[8/10] 🏗️ Construction des images Docker"
+      command: docker compose -f docker-compose.prod.yml build --no-cache
+      args:
+        chdir: "{{ deploy_dir }}"
+      become_user: "{{ deploy_user }}"
+      tags: build
+
+    # ====================================================================
+    # ÉTAPE 9 : Démarrage des conteneurs
+    # ====================================================================
+    - name: "[9/10] 🚀 Démarrage des conteneurs en arrière-plan"
+      command: docker compose -f docker-compose.prod.yml up -d
+      args:
+        chdir: "{{ deploy_dir }}"
+      become_user: "{{ deploy_user }}"
+      tags: start
+
+    # ====================================================================
+    # ÉTAPE 10 : Vérification du déploiement
+    # ====================================================================
+    - name: "[10/10] ⏳ Attente du démarrage des services (30 secondes)"
+      pause:
+        seconds: 30
+
+    - name: "[10/10] 🔍 Vérification de l'état des conteneurs"
+      command: docker compose -f docker-compose.prod.yml ps
+      args:
+        chdir: "{{ deploy_dir }}"
+      become_user: "{{ deploy_user }}"
+      register: containers_status
+      changed_when: false
+
+    - name: "[10/10] 📊 Affichage de l'état des conteneurs"
+      debug:
+        var: containers_status.stdout_lines
+
+    - name: "[10/10] 📝 Récupération des logs récents"
+      command: docker compose -f docker-compose.prod.yml logs --tail=20
+      args:
+        chdir: "{{ deploy_dir }}"
+      become_user: "{{ deploy_user }}"
+      register: container_logs
+      changed_when: false
+
+    - name: "[10/10] 📋 Affichage des logs"
+      debug:
+        var: container_logs.stdout_lines
+
+    # ====================================================================
+    # RÉSUMÉ FINAL
+    # ====================================================================
+    - name: "✅ Déploiement terminé avec succès!"
+      debug:
+        msg:
+          - "🎉 L'application DockeZR a été déployée avec succès!"
+          - ""
+          - "🌐 Accès aux services:"
+          - "   - Frontend:    http://{{ ansible_host }}:{{ frontend_port }}"
+          - "   - Backend API: http://{{ ansible_host }}:{{ backend_port }}"
+          - "   - Swagger:     http://{{ ansible_host }}:{{ backend_port }}/docs"
+          - "   - Prometheus:  http://{{ ansible_host }}:{{ prometheus_port }}"
+          - "   - Grafana:     http://{{ ansible_host }}:{{ grafana_port }}"
+          - ""
+          - "📁 Répertoire de déploiement: {{ deploy_dir }}"
+          - ""
+          - "🔧 Commandes utiles:"
+          - "   - Voir les logs:      cd {{ deploy_dir }} && docker compose -f docker-compose.prod.yml logs -f"
+          - "   - Redémarrer:         cd {{ deploy_dir }} && docker compose -f docker-compose.prod.yml restart"
+          - "   - Arrêter:            cd {{ deploy_dir }} && docker compose -f docker-compose.prod.yml down"
+

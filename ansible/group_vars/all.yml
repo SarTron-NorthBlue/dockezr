@@ -1,0 +1,29 @@
+# Variables globales pour tous les hôtes
+---
+# Configuration du projet
+project_name: dockezr
+project_repo: "https://github.com/VOTRE_USERNAME/dockezr.git"
+project_branch: main
+deploy_dir: "/opt/{{ project_name }}"
+
+# Configuration Docker
+docker_compose_version: "2.23.0"
+
+# Utilisateur du système
+deploy_user: "{{ ansible_user }}"
+
+# Ports de l'application
+backend_port: 8001
+frontend_port: 3000
+prometheus_port: 9090
+grafana_port: 3001
+
+# Configuration de la base de données (Production)
+postgres_user: dockezr_user
+postgres_password: "changez_ce_mot_de_passe_en_production"
+postgres_db: dockezr
+
+# Configuration Grafana
+grafana_admin_user: admin
+grafana_admin_password: "changez_ce_mot_de_passe_en_production"
+

@@ -1,0 +1,186 @@
+╔══════════════════════════════════════════════════════════════════╗
+║                                                                  ║
+║          TP7 - OPERATE : EXPLOITATION & MAINTENANCE              ║
+║          AUTOMATISATION ANSIBLE - DOCKEZR                        ║
+║                                                                  ║
+╚══════════════════════════════════════════════════════════════════╝
+
+═══════════════════════════════════════════════════════════════════
+ ✅ TOUS LES FICHIERS ONT ÉTÉ CRÉÉS AVEC SUCCÈS !
+═══════════════════════════════════════════════════════════════════
+
+📁 FICHIERS CRÉÉS DANS CE DOSSIER :
+───────────────────────────────────────────────────────────────────
+
+PLAYBOOK ANSIBLE (LIVRABLE PRINCIPAL) :
+  ✓ deploy.yml                    - Playbook principal commenté
+  ✓ inventory.ini                 - Configuration des serveurs
+  ✓ group_vars/all.yml           - Variables de configuration
+  ✓ templates/env.prod.j2        - Template d'environnement
+  ✓ ansible.cfg                  - Configuration Ansible
+
+SCRIPTS D'AUTOMATISATION :
+  ✓ deploy-interactive.ps1       - Déploiement automatique (RECOMMANDÉ)
+  ✓ test-prereqs.ps1             - Vérification des prérequis
+  ✓ deploy-auto.ps1              - Déploiement avancé
+  ✓ deploy.sh                    - Script pour Linux/WSL
+
+DOCUMENTATION :
+  ✓ START_HERE.md                - 👈 COMMENCEZ ICI !
+  ✓ RESUME_TP7.md                - Résumé complet du TP7
+  ✓ QUICK_START.md               - Guide rapide 5 minutes
+  ✓ GUIDE_EXECUTION.md           - Guide détaillé pas à pas
+  ✓ README.md                    - Documentation Ansible complète
+
+═══════════════════════════════════════════════════════════════════
+ 🚀 DÉMARRAGE RAPIDE (3 COMMANDES)
+═══════════════════════════════════════════════════════════════════
+
+1️⃣  VÉRIFIER LES PRÉREQUIS :
+    
+    .\test-prereqs.ps1
+
+2️⃣  LIRE LE GUIDE DE DÉMARRAGE :
+    
+    notepad START_HERE.md
+    (ou ouvrir START_HERE.md dans votre éditeur préféré)
+
+3️⃣  LANCER LE DÉPLOIEMENT :
+    
+    .\deploy-interactive.ps1
+    
+    Le script vous demandera :
+    - L'adresse IP de votre serveur
+    - Le nom d'utilisateur SSH
+    Puis déploiera automatiquement !
+
+═══════════════════════════════════════════════════════════════════
+ 📋 CE QUE FAIT LE PLAYBOOK AUTOMATIQUEMENT
+═══════════════════════════════════════════════════════════════════
+
+Sur votre serveur Linux, Ansible va :
+
+  [1/10] ✓ Mettre à jour le système
+  [2/10] ✓ Installer Docker + Docker Compose
+  [3/10] ✓ Vérifier Docker Compose
+  [4/10] ✓ Créer les répertoires de déploiement
+  [5/10] ✓ Cloner le repository GitHub
+  [6/10] ✓ Configurer l'environnement de production
+  [7/10] ✓ Arrêter les conteneurs existants (si présents)
+  [8/10] ✓ Construire les images Docker
+  [9/10] ✓ Lancer tous les services
+  [10/10] ✓ Vérifier et afficher les logs
+
+Durée totale : 5-10 minutes ⏱️
+
+═══════════════════════════════════════════════════════════════════
+ ⚙️ CONFIGURATION REQUISE (AVANT DE DÉPLOYER)
+═══════════════════════════════════════════════════════════════════
+
+AVANT DE LANCER LE DÉPLOIEMENT, VOUS DEVEZ :
+
+1. Avoir WSL avec Ubuntu installé sur Windows
+   → Si pas installé : wsl --install -d Ubuntu
+
+2. Avoir Ansible installé dans WSL
+   → wsl
+   → sudo apt update && sudo apt install ansible -y
+
+3. Avoir accès à un serveur Linux
+   → Avec SSH activé
+   → Avec votre clé SSH configurée
+
+4. Connaître :
+   → L'adresse IP du serveur
+   → Le nom d'utilisateur SSH (ubuntu, root, etc.)
+
+═══════════════════════════════════════════════════════════════════
+ 🎯 LIVRABLES POUR LE TP7
+═══════════════════════════════════════════════════════════════════
+
+Pour valider le TP7, vous devez rendre :
+
+  ☐ deploy.yml (playbook commenté) ← Déjà créé ✓
+  ☐ inventory.ini configuré avec votre serveur
+  ☐ Capture d'écran : Exécution réussie du playbook
+  ☐ Capture d'écran : docker ps sur le serveur
+  ☐ Capture d'écran : Application web accessible
+  ☐ Documentation : Ce dossier ansible/
+
+═══════════════════════════════════════════════════════════════════
+ 🌐 ACCÈS AUX SERVICES APRÈS DÉPLOIEMENT
+═══════════════════════════════════════════════════════════════════
+
+Une fois déployé, accédez à :
+
+  Frontend :     http://VOTRE_IP:3000
+  Backend API :  http://VOTRE_IP:8001
+  Swagger Docs : http://VOTRE_IP:8001/docs
+  Prometheus :   http://VOTRE_IP:9090
+  Grafana :      http://VOTRE_IP:3001
+
+═══════════════════════════════════════════════════════════════════
+ 🐛 EN CAS DE PROBLÈME
+═══════════════════════════════════════════════════════════════════
+
+1. Lancez le diagnostic :
+   .\test-prereqs.ps1
+
+2. Lisez les messages d'erreur (ils sont explicites)
+
+3. Consultez START_HERE.md pour les solutions
+
+4. Vérifiez la section "Problèmes Courants" dans START_HERE.md
+
+═══════════════════════════════════════════════════════════════════
+ 📚 DOCUMENTATION
+═══════════════════════════════════════════════════════════════════
+
+  📘 START_HERE.md         → Guide de démarrage complet
+  📗 RESUME_TP7.md         → Résumé et validation du TP
+  📙 QUICK_START.md        → Déploiement en 5 minutes
+  📕 GUIDE_EXECUTION.md    → Guide détaillé avec captures
+  📖 README.md             → Documentation Ansible
+
+═══════════════════════════════════════════════════════════════════
+ 🎓 ARCHITECTURE
+═══════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────┐
+│  Votre Machine Windows          │
+│  ├── PowerShell                 │
+│  └── WSL Ubuntu                 │
+│      └── Ansible                │
+└──────────────┬──────────────────┘
+               │ SSH
+               ▼
+┌─────────────────────────────────┐
+│  Serveur Linux                  │
+│  ├── Docker Engine              │
+│  └── Conteneurs :               │
+│      ├── PostgreSQL             │
+│      ├── FastAPI Backend        │
+│      ├── Next.js Frontend       │
+│      ├── Prometheus             │
+│      └── Grafana                │
+└─────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════
+ ✅ VOUS ÊTES PRÊT !
+═══════════════════════════════════════════════════════════════════
+
+Tout a été préparé pour vous. Il ne reste plus qu'à :
+
+  1. Ouvrir START_HERE.md
+  2. Suivre les 5 étapes
+  3. Lancer .\deploy-interactive.ps1
+  4. Prendre les captures d'écran
+  5. Rendre le TP7 ! 🎉
+
+═══════════════════════════════════════════════════════════════════
+
+Bon déploiement ! 🚀
+
+Créé automatiquement pour le TP7 - OPERATE
+Date : 16/10/2025
+
