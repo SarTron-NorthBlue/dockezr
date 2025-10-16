@@ -1,0 +1,31 @@
+name: 🚀 Deploy to Render
+
+on:
+  push:
+    tags: [ 'v*' ]
+  workflow_dispatch:
+
+env:
+  RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
+  RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    
+    steps:
+    - name: 📥 Checkout repository
+      uses: actions/checkout@v4
+
+    - name: 🚀 Deploy to Render
+      uses: johnbeynon/render-deploy-action@v0.0.8
+      with:
+        service-id: ${{ env.RENDER_SERVICE_ID }}
+        api-key: ${{ env.RENDER_API_KEY }}
+        wait-for-success: true
+
+    - name: ✅ Deployment successful
+      run: |
+        echo "🎉 Application deployed successfully to Render!"
+        echo "🌐 Your app is now accessible publicly"

@@ -1,0 +1,57 @@
+name: 🚀 Deploy to Linux Server
+
+on:
+  push:
+    tags: [ 'v*' ]
+  workflow_dispatch:
+
+env:
+  SERVER_HOST: ${{ secrets.SERVER_HOST }}
+  SERVER_USER: ${{ secrets.SERVER_USER }}
+  SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    
+    steps:
+    - name: 📥 Checkout repository
+      uses: actions/checkout@v4
+
+    - name: 🔐 Setup SSH
+      uses: webfactory/ssh-agent@v0.7.0
+      with:
+        ssh-private-key: ${{ env.SSH_PRIVATE_KEY }}
+
+    - name: 🚀 Deploy to server
+      run: |
+        ssh -o StrictHostKeyChecking=no ${{ env.SERVER_USER }}@${{ env.SERVER_HOST }} << 'EOF'
+          # Navigate to project directory
+          cd /opt/dockezr
+          
+          # Pull latest changes
+          git fetch origin
+          git checkout ${{ github.ref_name }}
+          
+          # Pull latest images
+          docker-compose pull
+          
+          # Restart services
+          docker-compose down
+          docker-compose up -d
+          
+          # Wait for services to be ready
+          sleep 30
+          
+          # Test connectivity
+          curl -f http://localhost:3000/health || exit 1
+          curl -f http://localhost:8001/health || exit 1
+          
+          echo "🎉 Deployment successful!"
+        EOF
+
+    - name: ✅ Deployment successful
+      run: |
+        echo "🎉 Application deployed successfully to server!"
+        echo "🌐 Your app is now accessible at: http://${{ env.SERVER_HOST }}"
