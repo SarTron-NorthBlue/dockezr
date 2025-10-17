@@ -5,56 +5,60 @@ services:
     container_name: dockezr_db_prod
     restart: always
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-user}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
-      POSTGRES_DB: ${POSTGRES_DB:-dockezr}
+      POSTGRES_USER: dockezr_user
+      POSTGRES_PASSWORD: Dockezr2025!Secure
+      POSTGRES_DB: dockezr_prod
     ports:
-      - "${DB_PORT:-5432}:5432"
+      - "5432:5432"
     volumes:
       - postgres_data_prod:/var/lib/postgresql/data
     networks:
       - dockezr_network_prod
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-user} -d ${POSTGRES_DB:-dockezr}"]
+      test: ["CMD-SHELL", "pg_isready -U dockezr_user -d dockezr_prod"]
       interval: 10s
       timeout: 5s
       retries: 5
 
   # Backend FastAPI
   backend:
-    image: ${DOCKERHUB_USERNAME}/${DOCKERHUB_REPO}-backend:${VERSION:-latest}
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
     container_name: dockezr_backend_prod
     restart: always
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-user}:${POSTGRES_PASSWORD:-password}@db:5432/${POSTGRES_DB:-dockezr}
+      DATABASE_URL: postgresql://dockezr_user:Dockezr2025!Secure@db:5432/dockezr_prod
     ports:
-      - "${BACKEND_PORT:-8001}:8000"
+      - "8001:8000"
     depends_on:
       db:
         condition: service_healthy
     networks:
       - dockezr_network_prod
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/docs"]
       interval: 30s
       timeout: 10s
       retries: 3
 
   # Frontend Next.js
   frontend:
-    image: ${DOCKERHUB_USERNAME}/${DOCKERHUB_REPO}-frontend:${VERSION:-latest}
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
     container_name: dockezr_frontend_prod
     restart: always
     environment:
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8001}
+      NEXT_PUBLIC_API_URL: http://141.253.118.141:8001
     ports:
-      - "${FRONTEND_PORT:-3000}:3000"
+      - "3000:3000"
     depends_on:
       - backend
     networks:
       - dockezr_network_prod
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -65,7 +69,7 @@ services:
     container_name: dockezr_prometheus_prod
     restart: always
     ports:
-      - "${PROMETHEUS_PORT:-9090}:9090"
+      - "9090:9090"
     volumes:
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus_data_prod:/prometheus
@@ -81,16 +85,35 @@ services:
     depends_on:
       - backend
 
+  # Node Exporter - Métriques système du serveur
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: dockezr_node_exporter_prod
+    restart: always
+    ports:
+      - "9100:9100"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    networks:
+      - dockezr_network_prod
+
   # Grafana - Tableaux de bord et visualisation
   grafana:
     image: grafana/grafana:latest
     container_name: dockezr_grafana_prod
     restart: always
     ports:
-      - "${GRAFANA_PORT:-3001}:3000"
+      - "3001:3000"
     environment:
-      - GF_SECURITY_ADMIN_USER=${GRAFANA_USER:-admin}
-      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin123}
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=Grafana2025!Secure
       - GF_USERS_ALLOW_SIGN_UP=false
     volumes:
       - grafana_data_prod:/var/lib/grafana

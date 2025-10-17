@@ -58,7 +58,7 @@ export default function Home() {
     purpose: ''
   })
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://141.253.118.141:8001'
 
   useEffect(() => {
     fetchRooms()
@@ -535,7 +535,7 @@ export default function Home() {
 
                   <button
                     type="submit"
-                    disabled={loading || (selectedRoom && formData.reservation_date && formData.start_time && formData.end_time && !isSlotAvailable(selectedRoom, formData.reservation_date, formData.start_time, formData.end_time))}
+                    disabled={loading || !!(selectedRoom && formData.reservation_date && formData.start_time && formData.end_time && !isSlotAvailable(selectedRoom, formData.reservation_date, formData.start_time, formData.end_time))}
                     className="w-full bg-indigo-600 text-white py-3 px-4 rounded-lg hover:bg-indigo-700 transition-colors disabled:bg-gray-400 font-medium text-lg flex items-center justify-center gap-2"
                   >
                     {loading ? (

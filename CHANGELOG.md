@@ -8,25 +8,33 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 ## [1.1.0] - 2025-10-16
 
 ### Ajouté
-- **Monitoring et Observabilité** : Intégration complète Prometheus + Grafana
+- **🌐 Application en Production** : Déploiement complet sur serveur Oracle Cloud
+  - Application accessible en ligne : http://141.253.118.141:3000
+  - Backend API : http://141.253.118.141:8001
+  - Monitoring Grafana : http://141.253.118.141:3001
+  - Prometheus : http://141.253.118.141:9090
+
+- **📊 Monitoring et Observabilité** : Intégration complète Prometheus + Grafana
+  - Dashboard Grafana "Dockezr - Monitoring Complet" avec métriques en temps réel
   - Métriques automatiques pour le backend FastAPI
-  - Tableaux de bord Grafana pour la surveillance
-  - Endpoint `/metrics` pour la collecte de métriques
   - Surveillance des performances (CPU, mémoire, requêtes)
   - Métriques personnalisées (réservations, accès aux salles)
+  - Endpoint `/metrics` pour la collecte de métriques
 
-- **Déploiement en Production** : Configuration pour serveur Linux
+- **🚀 Déploiement en Production** : Configuration pour serveur Linux
   - Configuration de production avec docker-compose.prod.yml
-  - Variables d'environnement pour la production
+  - Variables d'environnement sécurisées pour la production
   - Guide de déploiement manuel sur serveur Linux
   - Support Docker Compose pour déploiement simplifié
+  - Configuration Ansible pour déploiement automatisé
 
-- **Infrastructure de Production** :
+- **🏗️ Infrastructure de Production** :
   - Images Docker optimisées pour la production
   - Configuration de santé (healthchecks) pour tous les services
   - Réseaux Docker dédiés pour la production
   - Volumes persistants pour les données
   - Configuration sécurisée des mots de passe
+  - Node Exporter pour métriques système
 
 ### Modifié
 - **Backend FastAPI** : Ajout des métriques Prometheus
